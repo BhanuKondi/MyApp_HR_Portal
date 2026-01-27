@@ -33,7 +33,7 @@ def create_default_admin():
             db.session.commit()
 
         # Ensure default admin user exists
-        admin_email = "admin@example.com"
+        admin_email = "admin@atikes.com"
         admin = User.query.filter_by(email=admin_email).first()
         if not admin:
             admin = User(
@@ -140,4 +140,4 @@ def test():
 
 # ----------------- RUN -----------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
