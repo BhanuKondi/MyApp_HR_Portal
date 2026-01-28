@@ -152,7 +152,7 @@ def download_payslip():
     # -------------------------------
     # Salary calculation (based on paid days)
     # -------------------------------
-    monthly_salary = float(salary.gross_salary)
+    monthly_salary = float(salary.gross_salary) / 12
     salary_per_day = round(monthly_salary / total_working_days, 2)
     net_salary = round(present_days * salary_per_day, 2)
     lwp_deduction = round(monthly_salary - net_salary, 2)
