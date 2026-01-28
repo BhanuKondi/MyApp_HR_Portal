@@ -1,16 +1,18 @@
 from flask import Flask, redirect, session
 from werkzeug.security import generate_password_hash
 from models.db import db
-
+from urllib.parse import quote_plus
 # ----------------- APP SETUP -----------------
 app = Flask(__name__, instance_relative_config=True)
 app.config.from_pyfile("config.py")
 
-# SQLAlchemy configuration
+
+password = quote_plus(app.config['MYSQL_PASSWORD'])  # will convert @ → %40
 app.config['SQLALCHEMY_DATABASE_URI'] = (
-    f"mysql+pymysql://{app.config['MYSQL_USER']}:{app.config['MYSQL_PASSWORD']}"
+    f"mysql+pymysql://{app.config['MYSQL_USER']}:{password}"
     f"@{app.config['MYSQL_HOST']}/{app.config['MYSQL_DATABASE']}"
 )
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = app.config["SECRET_KEY"]
 
