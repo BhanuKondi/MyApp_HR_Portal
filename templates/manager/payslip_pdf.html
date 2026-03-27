@@ -42,22 +42,21 @@
  
         td, th {
             border: 1px solid #000;
-            padding: 8px;
-            vertical-align: middle;
+            padding: 6px;
+            font-size: 13px;
         }
- 
         .text-right {
             text-align: right;
         }
  
-        .netpay {
-            background-color: #e6f4ea;
-            font-weight: bold;
-            font-size: 16px;
-            padding: 12px;
-            border: 1px solid #000;
+       .netpay {
+            background-color: #d4edda;
+            font-weight: 800;
+            font-size: 18px;
+            padding: 15px;
+            border: 2px solid #000;
         }
- 
+       
         .logo {
             max-height: 70px;
         }
@@ -70,6 +69,22 @@
                 border-bottom: 1px solid #000 !important;
             }
         }
+ 
+            .company-name-big {
+                font-size: 34px;
+                font-weight: 800;
+                letter-spacing: 2px;
+            }
+ 
+            .company-address {
+                font-size: 13px;
+            }
+ 
+            .payslip-title {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
     </style>
 </head>
  
@@ -78,31 +93,25 @@
 <div class="payslip-container">
  
     <!-- ================= HEADER ================= -->
-    <div class="row align-items-center mb-4 border-bottom pb-3">
+   <div class="d-flex justify-content-between align-items-center mb-3 pb-2"
+     style="border-bottom: 2px solid #000;">
  
-        <!-- LOGO -->
-        <div class="col-md-2 col-3 text-start">
-            <img src="{{ url_for('static', filename='images/logo.png') }}"
-     class="img-fluid logo"
-     alt="Company Logo">
-        </div>
- 
-        <!-- COMPANY DETAILS -->
-        <div class="col-md-7 col-9">
-            <div class="company-name">ATIKES</div>
-            <div class="fw-semibold">
+        <!-- LEFT -->
+        <div>
+            <div class="company-name-big">ATIKES</div>
+            <div class="company-address">
                 #4-36/1, Near Railway Station, Gopalapatnam,<br>
                 Andhra Pradesh – 533408
             </div>
         </div>
  
-        <!-- PAY PERIOD -->
-        <div class="col-md-3 text-end fw-bold">
-            Payslip for<br>
-            {{ pay_period }}
+        <!-- RIGHT -->
+        <div class="text-end">
+            <div class="payslip-title">PAYSLIP</div>
+            <div class="fw-bold">{{ pay_period }}</div>
         </div>
  
-    </div>
+</div>
  
     <!-- ================= EMPLOYEE SUMMARY ================= -->
     <div class="section-title mb-2">Employee Summary</div>
@@ -157,7 +166,7 @@
                 <td>Basic</td>
                 <td class="text-right">{{ basic }}</td>
                 <td>LWP Deduction</td>
-                <td class="text-right">{{ lwp_deduction }}</td>
+                <td class="text-right">{{ "%.2f"|format(lwp_deduction) }}</td>
             </tr>
             <tr>
                 <td>Fixed Allowance</td>
@@ -165,19 +174,29 @@
                 <td></td>
                 <td></td>
             </tr>
-            <tr class="fw-bold">
-                <td>Monthly salary</td>
-                <td class="text-right">{{ gross_salary }}</td>
-                <td>Total Deductions</td>
-                <td class="text-right">{{ lwp_deduction }}</td>
+            <tr>
+                <td>Bonus</td>
+                <td class="text-right">{{ "%.2f"|format(bonus) }}</td>
+                <td>Other Deduction</td>
+                <td class="text-right">{{ "%.2f"|format(deduction) }}</td>
             </tr>
+            <tr class="fw-bold">
+                <td>Month Salary</td>
+                <td class="text-right">{{ "%.2f"|format(gross_salary) }}</td>
+                <td>Total Deductions</td>
+                <td class="text-right">{{ "%.2f"|format(lwp_deduction + deduction) }}</td>
+            </tr>
+            <tr class="fw-bold">
+            <td colspan="3">Net Pay (Gross + Bonus - Deductions)</td>
+            <td class="text-right">{{ "%.2f"|format(net_pay) }}</td>
+        </tr>
         </tbody>
     </table>
  
     <!-- ================= NET PAY ================= -->
-    <div class="netpay">
-        Total Net Pay: ₹ {{ net_pay }} <br>
-        Amount in Words: {{ amount_in_words }}
+    <div class="netpay text-center">
+        NET PAY: ₹ {{ "%.2f"|format(net_pay) }} <br>
+        <small>({{ amount_in_words }})</small>
     </div>
  
     <!-- ================= FOOTER ================= -->
@@ -189,5 +208,7 @@
  
 </body>
 </html>
+ 
+ 
  
  

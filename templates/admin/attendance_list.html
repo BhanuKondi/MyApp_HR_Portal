@@ -219,7 +219,24 @@ function createCell(text) {
   td.innerText = text ?? '-';
   return td;
 }
+function formatHHMM(timeStr) {
+  if (!timeStr) return "00:00";
+  return timeStr.split(":").slice(0, 2).join(":");
+}
  
+ 
+function sumDurations(transactions) {
+  let totalMinutes = 0;
+  transactions.forEach(tx => {
+    if (tx.duration) {
+      const parts = tx.duration.split(":").map(Number); // [hh, mm, ss]
+      totalMinutes += parts[0]*60 + parts[1] + (parts[2] ? parts[2]/60 : 0);
+    }
+  });
+  const hh = Math.floor(totalMinutes / 60);
+  const mm = Math.floor(totalMinutes % 60);
+  return `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`;
+}    
 /* LOAD TODAY TABLE */
 async function loadToday() {
   try {
@@ -233,7 +250,7 @@ async function loadToday() {
       tr.appendChild(createCell(row.name));
       tr.appendChild(createCell(row.clock_in));
       tr.appendChild(createCell(row.clock_out));
-      tr.appendChild(createCell(row.worked));
+      tr.appendChild(createCell(formatHHMM(row.worked)));
       tr.appendChild(createCell(row.status));
       const btnTd = document.createElement('td');
       const btn = document.createElement('button');
@@ -290,7 +307,7 @@ async function loadTransactions() {
       tr.appendChild(createCell(tx.transaction_no));
       tr.appendChild(createCell(tx.clock_in));
       tr.appendChild(createCell(tx.clock_out));
-      tr.appendChild(createCell(tx.duration));
+      tr.appendChild(createCell(formatHHMM(tx.duration)));
       tbody.appendChild(tr);
     });
  
@@ -299,7 +316,7 @@ async function loadTransactions() {
     document.getElementById('modalTopSummary').innerHTML =
       `<div><strong>Date:</strong> ${dateDisplay}${userDisplay}</div>`;
  
-    const totalWorked = json.last_record?.worked || "00:00:00";
+    const totalWorked = sumDurations(json.transactions);
     document.getElementById('day-total-worked').innerText = totalWorked;
  
     const lastRec = json.last_record;
@@ -309,7 +326,7 @@ async function loadTransactions() {
           <div><strong>Last Record</strong></div>
           <div>Clock In: ${lastRec.clock_in}</div>
           <div>Clock Out: ${lastRec.clock_out}</div>
-          <div>Worked: ${lastRec.worked}</div>
+          <div>Worked: ${formatHHMM(lastRec.worked)}</div>
           <div>Status: ${lastRec.status}</div>
         </div>`;
     } else {
@@ -376,7 +393,7 @@ document.getElementById('showDateBtn')?.addEventListener('click', async () => {
     data.forEach(row => {
       const tr = document.createElement('tr');
       tr.appendChild(createCell(row.name));
-      tr.appendChild(createCell(row.worked));
+       tr.appendChild(createCell(formatHHMM(row.worked)));
       tbody.appendChild(tr);
     });
  

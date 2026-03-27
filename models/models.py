@@ -87,7 +87,11 @@ class Leave(db.Model):
 
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
-    total_days = db.Column(db.Integer)
+    # models/models.py
+
+    total_days = db.Column(db.Float)  
+# OR (recommended)
+# total_days = db.Column(db.Numeric(3,1))
     reason = db.Column(db.String(200))
     status = db.Column(db.String(20), default="Pending")
     decision_date = db.Column(db.DateTime)
@@ -114,7 +118,7 @@ class Leavee(db.Model):
     emp_code = db.Column(db.String(20), nullable=False)
     start_date = db.Column(db.Date, nullable=False)
     end_date = db.Column(db.Date, nullable=False)
-    total_days = db.Column(db.Integer, nullable=False)
+    total_days = db.Column(db.Float, nullable=False)
     reason = db.Column(db.Text, nullable=False)
     employee_name = db.Column(db.String(45), nullable=False)
     status = db.Column(db.String(20), default="PENDING_L1")  # PENDING_L1, REJECTED_L1, PENDING_L2, APPROVED
@@ -174,5 +178,23 @@ class PayrollRun(db.Model):
     __table_args__ = (
         db.UniqueConstraint('month', 'year', name='uq_payroll_run_month_year'),
     )
-
+class PayrollDetails(db.Model):
+    __tablename__ = "payroll_details"
+ 
+    id = db.Column(db.Integer, primary_key=True)
+ 
+    employee_id = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.Integer, nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+ 
+    net_salary = db.Column(db.Float, nullable=False)
+    bonus = db.Column(db.Float, default=0)
+    deduction = db.Column(db.Float, default=0)
+    final_salary = db.Column(db.Float, nullable=False)
+ 
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+ 
+    __table_args__ = (
+        db.UniqueConstraint('employee_id', 'month', 'year', name='uq_emp_month_year'),
+    )
 from models.attendance import Attendance

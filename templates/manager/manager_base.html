@@ -65,20 +65,17 @@
             <li class="nav-item">
     <a href="{{ url_for('manager_leaves.leave_management') }}"
        class="nav-link sidebar-item 
-       {% if request.path.startswith('/manager/leave-management') 
-          or request.path.startswith('/manager/holidays') 
-          or request.path.startswith('/manager/request-leave') 
-          or request.path.startswith('/manager/approvals')
-          or request.path.startswith('/manager/track-requests') %}active{% endif %}">
+       {% if request.path.startswith('/manager/leaves') %}active{% endif %}">
         Leave Management
     </a>
 </li>
             <li class="nav-item">
-    <a class="nav-link" href="{{ url_for('manager_payroll.payslip_page') }}">
+    <a href="{{ url_for('manager_payroll.payslip_page') }}"
+       class="nav-link sidebar-item 
+       {% if request.path.startswith('/manager/payroll') %}active{% endif %}">
         <i class="bi bi-file-earmark-pdf"></i> Download Payslip
     </a>
 </li>
-
         </ul>
     </div>
 

@@ -1,0 +1,83 @@
+{% extends "manager/manager_base.html" %}
+{% block title %}Request Leave{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Request Leave</h2>
+
+    <form method="POST" action="{{ url_for('manager_leaves.submit_leave') }}">
+
+        <input type="hidden" name="is_half_day" id="is_half_day" value="false">
+
+        <div class="mb-3">
+            <label>Employee Code</label>
+            <input type="text" name="emp_code" class="form-control" value="{{ employee.emp_code }}" readonly>
+        </div>
+        
+        <div class="mb-3">
+            <label>Leave Type</label>
+            <select class="form-control" id="leave_type" name="leave_type" required onchange="handleLeaveType()">
+                <option value="Casual Leave">Casual Leave</option>
+                <option value="Sick Leave">Sick Leave</option>
+                <option value="Leave Without Pay">Leave Without Pay</option>
+            </select>
+        </div>
+
+        <div class="mb-3" id="halfDayContainer" style="display:none;">
+            <label>Leave Duration</label>
+            <select class="form-control" onchange="toggleHalfDay(this.value)">
+                <option value="false">Full Day</option>
+                <option value="true">Half Day</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Start Date</label>
+            <input type="date" name="start_date" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label>End Date</label>
+            <input type="date" name="end_date" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label>Reason</label>
+            <textarea name="reason" class="form-control" required></textarea>
+        </div>
+
+        <button class="btn btn-primary">Submit Request</button>
+    </form>
+</div>
+
+<script>
+function handleLeaveType() {
+    let type = document.getElementById("leave_type").value;
+    let halfDiv = document.getElementById("halfDayContainer");
+
+    halfDiv.style.display = (type === "Casual Leave" || type === "Sick Leave") ? "block" : "none";
+}
+
+function toggleHalfDay(value) {
+    document.getElementById("is_half_day").value = value;
+
+    let start = document.querySelector("input[name='start_date']");
+    let end = document.querySelector("input[name='end_date']");
+
+    if (value === "true") {
+        end.value = start.value;
+        end.readOnly = true;
+    } else {
+        end.readOnly = false;
+    }
+}
+
+document.querySelector("input[name='start_date']").addEventListener("change", function () {
+    let isHalf = document.getElementById("is_half_day").value === "true";
+    if (isHalf) {
+        document.querySelector("input[name='end_date']").value = this.value;
+    }
+});
+</script>
+
+{% endblock %}

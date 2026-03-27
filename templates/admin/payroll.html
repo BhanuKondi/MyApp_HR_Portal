@@ -1,14 +1,14 @@
 {% extends "admin/admin_base.html" %}
 {% block content %}
-
+ 
 <h3 class="fw-bold mb-4">Payroll Management</h3>
-
+ 
 <!-- ================= Generate Pay Run ================= -->
 <div class="card mb-4">
     <div class="card-body">
         <form method="POST" action="{{ url_for('admin_payroll.generate_payrun') }}">
             <div class="row g-3 align-items-end">
-
+ 
                 <!-- Month Picker -->
                 <div class="col-md-6">
                     <label class="form-label">Payroll Month</label>
@@ -16,30 +16,30 @@
                            name="pay_month"
                            class="form-control"
                            value="{{ selected_year | default('') }}{% if selected_month is defined %}-{{ '%02d' % selected_month }}{% endif %}"
-
+ 
                            required>
                 </div>
-
+ 
                 <!-- Button -->
                 <div class="col-md-6">
                     <button class="btn btn-primary w-100 mt-4">
                         Generate Pay Run
                     </button>
                 </div>
-
+ 
             </div>
         </form>
     </div>
 </div>
-
+ 
 {% if payroll_data %}
-
+ 
 <!-- ================= Payroll Approval Section ================= -->
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0">
         Payroll for {{ selected_month }}/{{ selected_year }}
     </h5>
-
+ 
     {% if payroll_approved %}
         <span class="badge bg-success fs-6">
             ✔ Payroll Approved
@@ -55,8 +55,10 @@
         </form>
     {% endif %}
 </div>
-
+ 
 <!-- ================= Payroll Table ================= -->
+<form method="POST" action="{{ url_for('admin_payroll.update_adjustments') }}">
+ 
 <div class="card shadow-sm">
     <div class="card-body">
         <table class="table table-bordered align-middle">
@@ -65,15 +67,20 @@
                     <th>Emp Code</th>
                     <th>Name</th>
                     <th>Salary Month</th>
-                    <th class="text-end">Monthly Salary</th>
+                    <th>Monthly Salary</th>
                     <th>Total Working Days</th>
                     <th>Present Days</th>
                     <th>Absent Days</th>
-                    <th class="text-center">LWP Days</th>
-                    <th>LWP deduction</th>
+                    <th>LWP Days</th>
+                    <th>LWP Deduction</th>
+ 
+                    <!-- NEW COLUMNS -->
+                    <th>Bonus</th>
+                    <th>Deduction</th>
                     <th>Net Salary</th>
                 </tr>
             </thead>
+ 
             <tbody>
                 {% for row in payroll_data %}
                 <tr>
@@ -81,21 +88,99 @@
                     <td>{{ row.name }}</td>
                     <td>{{ row.salary_month }}</td>
                     <td>{{ row.monthly_salary }}</td>
-                    <td>{{row.total_working_days}}</td>
-                    <td>{{row.present_days}}</td>
-                    <td>{{row.absent_days}}</td>
-                    
-                    <td >{{ row.lwp_days}} </td>
-                    <td>{{row.lwp_deduction}}</td>
-                    <td>{{row.net_salary}}</td>
-                    
+                    <td>{{ row.total_working_days }}</td>
+                    <td>{{ row.present_days }}</td>
+                    <td>{{ row.absent_days }}</td>
+                    <td>{{ row.lwp_days }}</td>
+                    <td>{{ row.lwp_deduction }}</td>
+ 
+                    <!-- BONUS -->
+                    <td>
+                       <input type="number"
+                            name="bonus_{{ row.emp_code }}"
+                            value="{{ row.bonus }}"
+                            class="form-control bonus-input text-center"
+                            style="width: 100px; font-size: 16px;"
+                            min="0">
+                    </td>
+ 
+                    <!-- DEDUCTION -->
+                    <td>
+                       <input type="number"
+                            name="deduction_{{ row.emp_code }}"
+                            value="{{ row.deduction }}"
+                            class="form-control deduction-input text-center"
+                            style="width: 100px; font-size: 16px;"
+                            min="0">
+                    </td>
+ 
+                    <!-- FINAL NET SALARY -->
+                    <td class="final-salary"
+                        data-base="{{ row.net_salary }}">
+                        {{ row.final_salary }}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+ 
+        <!-- Hidden fields -->
+        <input type="hidden" name="month" value="{{ selected_month }}">
+        <input type="hidden" name="year" value="{{ selected_year }}">
+ 
+        <!-- Save button -->
+        <button type="button" id="saveBtn" class="btn btn-primary mt-3">
+            Save Bonus & Deduction
+        </button>
     </div>
 </div>
-
+ 
+</form>
 {% endif %}
-
+ 
+<script>
+    document.getElementById("saveBtn").addEventListener("click", function () {
+ 
+    const form = document.querySelector("form[action*='update-adjustments']");
+    const formData = new FormData(form);
+ 
+    fetch(form.action, {
+        method: "POST",
+        body: formData
+    })
+    .then(() => {
+        alert("Saved successfully!");
+    })
+    .catch(() => {
+        alert("Error saving data");
+    });
+ 
+});
+document.addEventListener("DOMContentLoaded", function () {
+ 
+    const rows = document.querySelectorAll("tbody tr");
+ 
+    rows.forEach(row => {
+        const bonusInput = row.querySelector(".bonus-input");
+        const deductionInput = row.querySelector(".deduction-input");
+        const finalSalaryCell = row.querySelector(".final-salary"); // ✅ FIX
+ 
+        function updateSalary() {
+            let base = parseFloat(finalSalaryCell.dataset.base) || 0;
+            let bonus = parseFloat(bonusInput.value) || 0;
+            let deduction = parseFloat(deductionInput.value) || 0;
+ 
+            let finalSalary = base + bonus - deduction;
+ 
+            finalSalaryCell.innerText = finalSalary.toFixed(2);
+        }
+ 
+        bonusInput.addEventListener("input", updateSalary);
+        deductionInput.addEventListener("input", updateSalary);
+    });
+ 
+});
+</script>
+ 
 {% endblock %}
+ 

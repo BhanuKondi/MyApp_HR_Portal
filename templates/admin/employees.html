@@ -371,7 +371,8 @@
 
 
 <!-- ================= EDIT EMPLOYEE MODAL ================= -->
-<div class="modal fade" id="editEmployeeModal" tabindex="-1">
+<div class="modal fade" id="editEmployeeModal" tabindex="-1"
+     data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <form id="editEmployeeForm" action="/admin/employees/edit" method="POST">
@@ -381,9 +382,9 @@
         </div>
         <div class="modal-body">
           <ul class="nav nav-tabs mb-3">
-            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#editBasicTab">Basic Details</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#editSalaryTab">Salary</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#editAccountTab">Account</button></li>
+            <li class="nav-item"><button type="button" class="nav-link active" data-bs-toggle="tab" data-bs-target="#editBasicTab">Basic Details</button></li>
+            <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#editSalaryTab">Salary</button></li>
+            <li class="nav-item"><button type="button" class="nav-link" data-bs-toggle="tab" data-bs-target="#editAccountTab">Account</button></li>
           </ul>
 
           <div class="tab-content">
@@ -462,13 +463,13 @@
                     </tr>
                     <tr>
                       <td>Fixed Allowance</td>
-                      <td><input class="fixed form-control" value="4532" name="fixed_allowance"></td>
+                      <td><input class="pct form-control" value="10" name="fixed_allowance"></td>
                       <td><input class="monthly form-control" readonly></td>
                       <td><input class="annual form-control" readonly></td>
                     </tr>
                     <tr>
                       <td>House Rent Allowance</td>
-                      <td><input class="pct form-control" value="20" name="hra_percent"></td>
+                      <td><input class="pct form-control" value="10" name="hra_percent"></td>
                       <td><input class="monthly form-control" readonly></td>
                       <td><input class="annual form-control" readonly></td>
                     </tr>
@@ -483,7 +484,7 @@
                   <tbody>
                     <tr>
                       <td>Medical Reimbursement</td>
-                      <td><input class="fixed form-control" value="1000" name="medical_fixed"></td>
+                      <td><input class="pct form-control" value="10" name="medical_fixed"></td>
                       <td><input class="monthly form-control" readonly></td>
                       <td><input class="annual form-control" readonly></td>
                     </tr>
@@ -498,7 +499,7 @@
                   <tbody>
                     <tr>
                       <td>Driver Reimbursement</td>
-                      <td><input class="fixed form-control" value="1000" name="driver_reimbursement"></td>
+                      <td><input class="pct form-control" value="10" name="driver_reimbursement"></td>
                       <td><input class="monthly form-control" readonly></td>
                       <td><input class="annual form-control" readonly></td>
                     </tr>
@@ -570,11 +571,10 @@
    TAB NAVIGATION
 ====================================================== */
 function nextTab(tabId) {
-    const modal = document.querySelector('.modal.show');
-    if (!modal) return;
-
-    const btn = modal.querySelector(`button[data-bs-target="#${tabId}"]`);
-    if (btn) bootstrap.Tab.getOrCreateInstance(btn).show();
+    const tabTrigger = document.querySelector(`[data-bs-target="#${tabId}"]`);
+    if (tabTrigger) {
+        new bootstrap.Tab(tabTrigger).show();
+    }
 }
 
 /* ======================================================
@@ -699,6 +699,7 @@ function openViewEmployee(empId) {
         .then(r => r.json())
         .then(emp => {
 
+            /* ================= BASIC ================= */
             viewEmpCode.value     = emp.emp_code;
             viewWorkEmail.value   = emp.work_email;
             viewFirstName.value   = emp.first_name;
@@ -708,42 +709,66 @@ function openViewEmployee(empId) {
             viewJobTitle.value    = emp.job_title || '';
             viewDateJoining.value = emp.date_of_joining;
             viewRole.value        = emp.role_name;
-            viewManager.value     = emp.manager_name || '-';  // ✅ Add here
+            viewManager.value     = emp.manager_name || '-';
 
-
+            /* ================= SALARY ================= */
             const ctc = emp.salary?.gross_salary || 0;
             viewCTC.value = ctc;
 
-            const calc = (pct) => (ctc * pct) / 100;
+            const calcPercent = (pct) => (ctc * pct) / 100;
+            const calcFixed   = (monthly) => monthly * 12;
 
-            const basicA = calc(emp.salary?.basic_percent || 0);
-            const hraA   = calc(emp.salary?.hra_percent || 0);
-            const epfA   = calc(emp.salary?.epf_percent || 0);
+            /* ===== BASIC ===== */
+            const basicPct = emp.salary?.basic_percent || 0;
+            const basicA   = calcPercent(basicPct);
 
-            viewBasicCalc.value   = emp.salary?.basic_percent + '%';
-            viewBasicAnnual.value = basicA.toFixed(2);
-            viewBasicMonthly.value= (basicA/12).toFixed(2);
+            viewBasicCalc.value    = basicPct + '%';
+            viewBasicAnnual.value  = basicA.toFixed(2);
+            viewBasicMonthly.value = (basicA / 12).toFixed(2);
 
-            viewHRAcalc.value     = emp.salary?.hra_percent + '%';
-            viewHRAAnnual.value   = hraA.toFixed(2);
-            viewHRAMonthly.value  = (hraA/12).toFixed(2);
+            /* ===== HRA ===== */
+            const hraPct = emp.salary?.hra_percent || 0;
+            const hraA   = calcPercent(hraPct);
 
-            viewFixedAllowanceCalc.value   = emp.salary?.fixed_allowance || 0;
-            viewFixedAllowanceAnnual.value = (emp.salary?.fixed_allowance || 0) * 12;
-            viewFixedAllowanceMonthly.value= emp.salary?.fixed_allowance || 0;
+            viewHRAcalc.value      = hraPct + '%';
+            viewHRAAnnual.value    = hraA.toFixed(2);
+            viewHRAMonthly.value   = (hraA / 12).toFixed(2);
 
-            viewMedicalReim.value   = emp.salary?.medical_fixed || 0;
-            viewMedicalAnnual.value = (emp.salary?.medical_fixed || 0) * 12;
-            viewMedicalMonthly.value= emp.salary?.medical_fixed || 0;
+            /* ===== FIXED ALLOWANCE (FIXED MONTHLY) ===== */
+            const fixedMonthly = emp.salary?.fixed_allowance || 0;
+            const fixedAnnual  = calcPercent(fixedMonthly);
 
-            viewDriverReim.value   = emp.salary?.driver_reimbursement || 0;
-            viewDriverAnnual.value = (emp.salary?.driver_reimbursement || 0) * 12;
-            viewDriverMonthly.value= emp.salary?.driver_reimbursement || 0;
+            viewFixedAllowanceCalc.value = fixedMonthly+'%'
+            viewFixedAllowanceAnnual.value  = fixedAnnual.toFixed(2);
+            viewFixedAllowanceMonthly.value = (fixedAnnual / 12).toFixed(2);
 
-            viewEPFcalc.value   = emp.salary?.epf_percent + '%';
-            viewEPFAnnual.value = epfA.toFixed(2);
-            viewEPFMonthly.value= (epfA/12).toFixed(2);
+            /* ===== MEDICAL ===== */
+            const medicalMonthly = emp.salary?.medical_fixed || 0;
+            const medicalAnnual  = calcPercent(medicalMonthly);
 
+            viewMedicalReim.value        = medicalMonthly+'%';
+
+            viewMedicalAnnual.value = medicalAnnual.toFixed(2);
+            viewMedicalMonthly.value= (medicalAnnual / 12).toFixed(2);
+
+
+            /* ===== DRIVER ===== */
+            const driverMonthly = emp.salary?.driver_reimbursement || 0;
+            const driverAnnual  = calcPercent(driverMonthly);
+
+            viewDriverReim.value         = driverMonthly+'%';
+            viewDriverAnnual.value = driverAnnual.toFixed(2);
+            viewDriverMonthly.value= (driverAnnual / 12).toFixed(2);
+
+            /* ===== EPF ===== */
+            const epfPct = emp.salary?.epf_percent || 0;
+            const epfA   = calcPercent(epfPct);
+
+            viewEPFcalc.value      = epfPct + '%';
+            viewEPFAnnual.value    = epfA.toFixed(2);
+            viewEPFMonthly.value   = (epfA / 12).toFixed(2);
+
+            /* ================= ACCOUNT ================= */
             viewBankName.value      = emp.account?.bank_name || '';
             viewAccountNumber.value = emp.account?.account_number || '';
             viewIFSC.value          = emp.account?.ifsc_code || '';

@@ -104,17 +104,15 @@
             <li class="nav-item">
     <a href="{{ url_for('employee_leaves.leave_management') }}"
        class="nav-link sidebar-item
-       {% if request.path.startswith('/employee/leave-management')
-          or request.path.startswith('/employee/holidays')
-          or request.path.startswith('/employee/request-leave')
-          or request.path.startswith('/employee/approvals')
-          or request.path.startswith('/employee/track-requests') %}active{% endif %}">
+       {% if request.path.startswith('/employee/leaves') %}active{% endif %}">
         Leave Management
     </a>
 </li>
  
-<li class="nav-item">
-    <a class="nav-link" href="{{ url_for('employee_payroll.payslip_page') }}">
+     <li class="nav-item">
+    <a href="{{ url_for('employee_payroll.payslip_page') }}"
+       class="nav-link sidebar-item 
+       {% if request.path.startswith('/employee/payroll') %}active{% endif %}">
         <i class="bi bi-file-earmark-pdf"></i> Download Payslip
     </a>
 </li>

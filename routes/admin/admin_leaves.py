@@ -108,54 +108,81 @@ def leave_summary():
     employees = Employee.query.all()
     summary = []
 
-    TOTAL_CL = 6
+    current_year = datetime.now().year
+    current_month = datetime.now().month
+
+    TOTAL_CL = (current_month-1) * 0.5   # 🔥 Dynamic CL
     TOTAL_SL = 6
 
     for e in employees:
         emp = e.emp_code
 
-        # CASUAL LEAVE CONSUMED
+        # =========================
+        # CASUAL LEAVE CONSUMED (ONLY THIS YEAR)
+        # =========================
         cl_consumed = db.session.query(
             db.func.coalesce(db.func.sum(Leavee.total_days), 0)
-        ).filter_by(
-            emp_code=emp, status="APPROVED", leave_type="Casual Leave"
+        ).filter(
+            Leavee.emp_code == emp,
+            Leavee.status == "APPROVED",
+            Leavee.leave_type == "Casual Leave",
+            db.func.extract('year', Leavee.start_date) == current_year
         ).scalar()
 
+        cl_consumed = float(cl_consumed or 0)
+
+        # =========================
         # SICK LEAVE CONSUMED
+        # =========================
         sl_consumed = db.session.query(
             db.func.coalesce(db.func.sum(Leavee.total_days), 0)
-        ).filter_by(
-            emp_code=emp, status="APPROVED", leave_type="Sick Leave"
+        ).filter(
+            Leavee.emp_code == emp,
+            Leavee.status == "APPROVED",
+            Leavee.leave_type == "Sick Leave",
+            db.func.extract('year', Leavee.start_date) == current_year
         ).scalar()
 
+        sl_consumed = float(sl_consumed or 0)
+
+        # =========================
         # LWP
+        # =========================
         lwp = db.session.query(
             db.func.coalesce(db.func.sum(Leavee.total_days), 0)
-        ).filter_by(
-            emp_code=emp, status="APPROVED", leave_type="Leave Without Pay"
+        ).filter(
+            Leavee.emp_code == emp,
+            Leavee.status == "APPROVED",
+            Leavee.leave_type == "Leave Without Pay",
+            db.func.extract('year', Leavee.start_date) == current_year
         ).scalar()
 
-        # Remaining leaves
-        cl_remaining = TOTAL_CL - cl_consumed
+        lwp = float(lwp or 0)
+
+        # =========================
+        # REMAINING CALCULATION
+        # =========================
+        cl_remaining = round(TOTAL_CL - cl_consumed, 2)
         sl_remaining = TOTAL_SL - sl_consumed
 
         summary.append({
             "emp_code": emp,
             "name": f"{e.first_name} {e.last_name}",
 
-            "total_casual": TOTAL_CL,
+            # 🔥 CL (DYNAMIC)
+            "total_casual": round(TOTAL_CL, 2),
             "casual_consumed": cl_consumed,
-            "casual_remaining": cl_remaining,
+            "casual_remaining": max(cl_remaining, 0),
 
+            # SL (FIXED)
             "total_sick": TOTAL_SL,
             "sick_consumed": sl_consumed,
-            "sick_remaining": sl_remaining,
+            "sick_remaining": max(sl_remaining, 0),
 
             "LWP": lwp
         })
 
     return jsonify(summary)
-
 @admin_lbp.route("/add-holiday", methods=["GET", "POST"])
 def add_holiday():
     if request.method == "POST":

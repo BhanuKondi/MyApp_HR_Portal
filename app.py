@@ -1,11 +1,20 @@
 from flask import Flask, redirect, session
 from werkzeug.security import generate_password_hash
 from models.db import db
+from extensions import mail
 from urllib.parse import quote_plus
 # ----------------- APP SETUP -----------------
 app = Flask(__name__, instance_relative_config=True)
-app.config.from_pyfile("config.py")
 
+app.config.from_pyfile("config.py")
+app.config['MAIL_SERVER'] = 'smtp.office365.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'support@atikes.com'
+app.config['MAIL_PASSWORD'] = 'xxx'
+
+
+mail.init_app(app)
 
 password = quote_plus(app.config['MYSQL_PASSWORD'])  # will convert @ → %40
 app.config['SQLALCHEMY_DATABASE_URI'] = (
@@ -18,6 +27,10 @@ app.secret_key = app.config["SECRET_KEY"]
 
 # ----------------- DATABASE INIT -----------------
 db.init_app(app)
+
+
+
+
 
 # ----------------- MODELS -----------------
 from models.models import User, Role
@@ -143,4 +156,4 @@ def test():
 
 # ----------------- RUN -----------------
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=5050, debug=True)
