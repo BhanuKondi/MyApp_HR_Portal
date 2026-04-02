@@ -1,7 +1,6 @@
 # Copy your real DB credentials here
 MYSQL_HOST = "localhost"
-MYSQL_PORT = 3306
-MYSQL_USER = "root"
-MYSQL_PASSWORD = "bhanu"
-MYSQL_DATABASE = "hr_app1"
+MYSQL_USER = "hruser"
+MYSQL_PASSWORD = "Hr@1234"
+MYSQL_DATABASE = "hrapp1"
 SECRET_KEY = "xyz"
