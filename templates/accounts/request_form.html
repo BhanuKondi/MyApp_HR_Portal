@@ -1,0 +1,72 @@
+{% extends base_template %}
+{% block content %}
+<div class="workspace-hero">
+    <div>
+        <p class="eyebrow mb-2">Accounts Operations</p>
+        <h2 class="fw-bold mb-1">New Accounts Request</h2>
+        <p class="text-muted mb-0">Raise a request for office cash, utility bills, and other approved company spending.</p>
+    </div>
+</div>
+
+<form action="{{ url_for('account_requests.create_request') }}" method="POST" enctype="multipart/form-data" class="section-card">
+    <div class="row g-4">
+        <div class="col-md-4">
+            <label class="form-label">Request Type</label>
+            <select class="form-select" name="request_type_id" required>
+                <option value="">Select type</option>
+                {% for item in request_types %}
+                <option value="{{ item.id }}">{{ item.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Company</label>
+            <select class="form-select" name="company_id" required>
+                <option value="">Select company</option>
+                {% for company in companies %}
+                <option value="{{ company.id }}">{{ company.display_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Requested Amount</label>
+            <input type="number" class="form-control" name="requested_amount" step="0.01" min="0.01" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Payment Mode</label>
+            <select class="form-select" name="payment_mode" required>
+                <option value="">Select mode</option>
+                {% for value, label in payment_modes %}
+                <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Title</label>
+            <input type="text" class="form-control" name="title" placeholder="Utility bill payment for April, office petty cash, etc." required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Vendor / Payee</label>
+            <input type="text" class="form-control" name="vendor_name" placeholder="Optional vendor or payee name">
+        </div>
+        <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea class="form-control" name="description" rows="4" placeholder="Explain the expense, purpose, and any context the approver should know." required></textarea>
+        </div>
+        <div class="col-12">
+            <label class="form-label">Estimate / Quote Attachments</label>
+            <input type="file" class="form-control" name="estimate_attachments" accept="{{ allowed_attachment_accept }}" multiple>
+            <div class="form-text">Allowed formats: {{ allowed_attachment_label }}.</div>
+            <div class="form-text">Attach quotes, draft bills, or supporting estimates if you have them.</div>
+        </div>
+    </div>
+
+    <div class="modal-footer-strip mt-4">
+        <p class="modal-footer-copy">Submitting the request will send it to the configured admin approver for review.</p>
+        <div class="d-flex gap-2">
+            <button type="submit" name="form_action" value="draft" class="btn btn-outline-primary">Save Draft</button>
+            <button type="submit" name="form_action" value="submit" class="btn btn-primary">Submit For Approval</button>
+        </div>
+    </div>
+</form>
+{% endblock %}

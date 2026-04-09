@@ -1,0 +1,50 @@
+{% extends "manager/manager_base.html" %}
+{% block content %}
+<div class="workspace-hero">
+    <div>
+        <p class="eyebrow mb-2">Accounts Operations</p>
+        <h2 class="fw-bold mb-1">Accounts Approvals</h2>
+        <p class="text-muted mb-0">Review office-expense and cash requests assigned to you for approval.</p>
+    </div>
+    <div class="hero-metrics">
+        <div class="hero-metric"><span>Pending Approval</span><strong>{{ summary.pending_approval }}</strong></div>
+        <div class="hero-metric"><span>Approved</span><strong>{{ summary.approved }}</strong></div>
+        <div class="hero-metric"><span>Rejected</span><strong>{{ summary.rejected }}</strong></div>
+    </div>
+</div>
+
+<div class="section-card">
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Request</th>
+                    <th>Submitted By</th>
+                    <th>Type</th>
+                    <th>Title</th>
+                    <th>Requested</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th width="150">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in requests_list %}
+                <tr>
+                    <td>{{ item.request_no }}</td>
+                    <td>{{ item.created_by.display_name or item.created_by.email if item.created_by else '-' }}</td>
+                    <td>{{ item.request_type.name if item.request_type else "-" }}</td>
+                    <td>{{ item.title }}</td>
+                    <td>{{ "%.2f"|format(item.requested_amount or 0) }}</td>
+                    <td><span class="badge bg-light text-dark">{{ item.status.replace("_", " ").title() }}</span></td>
+                    <td>{{ item.submitted_at.strftime("%d %b %Y") if item.submitted_at else "-" }}</td>
+                    <td><a href="{{ url_for('manager_account_requests.view_request', request_id=item.id) }}" class="btn btn-sm btn-primary">Review</a></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted py-4">No accounts requests assigned to you.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
